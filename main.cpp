@@ -211,12 +211,16 @@ public:
 
 
     if (m_queue.empty()) {
-      m_condVar.timed_wait(lock, boost::get_system_time() + boost::posix_time::seconds(1));
+      if (!m_condVar.timed_wait(lock, boost::get_system_time() + boost::posix_time::seconds(1))) {
+        return false;
+      }
     }
 
     if (!m_queue.empty())  {
       t = m_queue.front();
       m_queue.pop_front();
+
+      cerr << "GET" << endl;
       return true;
     } else {
       return false;
@@ -255,23 +259,35 @@ public:
   void ThreadRun() {
     cerr << "thread up" << endl;
     for (;;) {
+      cerr << __LINE__ << endl;
       PRunnable p;
       if (m_queue.GetWaitblock(p)) {
+        cerr << __LINE__ << endl;
         //NULL ptr means wakeup
         if (p) {
+          cerr << __LINE__ << endl;
           try {
+            cerr << __LINE__ << endl;
             p->Run();
+            cerr << __LINE__ << endl;
           } catch(...) {
+            cerr << __LINE__ << endl;
             cerr << "unexpected exception in thread pool!";
             assert(false);
+            cerr << __LINE__ << endl;
           }
-        } else if (m_cancel && m_queue.IsEmpty()) {
+        } else  {
+          cerr << __LINE__ << endl;
           cerr <<"TD" << endl;
+          cerr << __LINE__ << endl;
           break;
         }
+        cerr << __LINE__ << endl;
       }
+      cerr << __LINE__ << endl;
     }
     cerr << "thread down" << endl;
+    cerr << __LINE__ << endl;
   }
 
 
